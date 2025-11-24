@@ -1,6 +1,6 @@
 package com.example.ttmrepuestos.data.repository
 
-import com.example.ttmrepuestos.data.local.Usuario
+import com.example.ttmrepuestos.model.Usuario // Se cambia la importación
 import com.example.ttmrepuestos.data.local.UsuarioDao
 
 class UsuarioRepository(private val usuarioDao: UsuarioDao) {

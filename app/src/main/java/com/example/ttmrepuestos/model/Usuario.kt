@@ -1,4 +1,4 @@
-package com.example.ttmrepuestos.data.local
+package com.example.ttmrepuestos.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

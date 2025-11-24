@@ -3,7 +3,7 @@ package com.example.ttmrepuestos.viewmodel
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.ttmrepuestos.data.local.Producto
+import com.example.ttmrepuestos.model.Producto
 import com.example.ttmrepuestos.data.repository.ProductoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -12,6 +12,13 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class ProductoViewModel(private val repository: ProductoRepository) : ViewModel() {
+
+    init {
+        viewModelScope.launch {
+            repository.refreshProducts()
+        }
+    }
+
     val products = repository.products.stateIn(
         viewModelScope,
         SharingStarted.Companion.WhileSubscribed(),

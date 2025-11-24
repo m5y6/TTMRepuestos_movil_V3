@@ -1,6 +1,7 @@
 package com.example.ttmrepuestos.data.local
 
 import androidx.room.*
+import com.example.ttmrepuestos.model.Usuario // Se cambia la importación
 import kotlinx.coroutines.flow.Flow
 
 @Dao

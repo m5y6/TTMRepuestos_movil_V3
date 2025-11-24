@@ -23,7 +23,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.ttmrepuestos.R
-import com.example.ttmrepuestos.data.local.Producto
+import com.example.ttmrepuestos.model.Producto
 import com.example.ttmrepuestos.ui.theme.CustomButton
 import com.example.ttmrepuestos.viewmodel.ProductoViewModel
 

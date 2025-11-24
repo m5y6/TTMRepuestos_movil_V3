@@ -3,7 +3,7 @@ package com.example.ttmrepuestos.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.ttmrepuestos.data.local.Usuario
+import com.example.ttmrepuestos.model.Usuario // Se cambia la importación
 import com.example.ttmrepuestos.data.repository.UsuarioRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
