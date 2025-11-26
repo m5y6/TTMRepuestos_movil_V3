@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.ttmrepuestos"
-        minSdk = 24
+        minSdk = 28  // ← CAMBIA ESTO de 24 a 28
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -37,6 +37,15 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+
+    // ← AGREGA ESTO
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE-notice.md"
+        }
     }
 }
 
@@ -76,11 +85,39 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+
+    // ===== PRUEBAS UNITARIAS (test/) =====
     testImplementation(libs.junit)
+    testImplementation("io.kotest:kotest-runner-junit5:5.8.0")
+    testImplementation("io.kotest:kotest-assertions-core:5.8.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+    testImplementation("io.mockk:mockk:1.13.10")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")  // ← AGREGA ESTO
+
+    // ===== PRUEBAS DE INSTRUMENTACIÓN (androidTest/) =====
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    androidTestImplementation("androidx.test:runner:1.6.1")
+    androidTestImplementation("androidx.test:rules:1.6.1")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")  // ← AGREGA ESTO
     androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.2")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")  // ← AGREGA ESTO
+
+    // ===== DEBUG =====
     debugImplementation(libs.androidx.compose.ui.tooling)
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.2")
+}
+
+configurations.all {
+    resolutionStrategy {
+        force("androidx.test.espresso:espresso-core:3.6.1")
+        force("androidx.test:runner:1.6.1")
+        force("androidx.test:rules:1.6.1")
+        force("androidx.test.ext:junit:1.2.1")  // ← AGREGA ESTO
+    }
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
