@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -21,6 +22,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.ttmrepuestos.ui.inicio.InicioScreen
 import com.example.ttmrepuestos.ui.registrarproducto.RegistrarProductoScreen
 import com.example.ttmrepuestos.ui.resumen.ResumenScreen
 import com.example.ttmrepuestos.ui.verproductos.VerProductosScreen
@@ -28,14 +30,16 @@ import com.example.ttmrepuestos.viewmodel.ProductoViewModel
 import com.example.ttmrepuestos.viewmodel.ProductoViewModelFactory
 
 sealed class BottomBarScreen(val route: String, val title: String, val icon: ImageVector) {
-    object Resumen : BottomBarScreen("resumen", "Inicio", Icons.Default.Home)
-    object VerProductos : BottomBarScreen("ver_productos", "Ver Productos", Icons.Default.List)
+    object Inicio : BottomBarScreen("inicio", "Inicio", Icons.Default.Home)
+    object Informe : BottomBarScreen("informe", "Informe", Icons.Default.List)
+    object Productos : BottomBarScreen("productos", "Productos", Icons.Default.Store)
     object RegistrarProducto : BottomBarScreen("registrar_producto", "Registrar", Icons.Default.Add)
 }
 
 val bottomBarItems = listOf(
-    BottomBarScreen.Resumen,
-    BottomBarScreen.VerProductos,
+    BottomBarScreen.Inicio,
+    BottomBarScreen.Informe,
+    BottomBarScreen.Productos,
     BottomBarScreen.RegistrarProducto
 )
 
@@ -71,13 +75,16 @@ fun MainScreen(factory: ProductoViewModelFactory) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = BottomBarScreen.Resumen.route, // Nueva pantalla de inicio
+            startDestination = BottomBarScreen.Inicio.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(BottomBarScreen.Resumen.route) {
+            composable(BottomBarScreen.Inicio.route) {
+                InicioScreen()
+            }
+            composable(BottomBarScreen.Informe.route) {
                 ResumenScreen(viewModel = viewModel)
             }
-            composable(BottomBarScreen.VerProductos.route) {
+            composable(BottomBarScreen.Productos.route) {
                 VerProductosScreen(viewModel = viewModel)
             }
             composable(BottomBarScreen.RegistrarProducto.route) {

@@ -3,8 +3,6 @@ package com.example.ttmrepuestos
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.core.view.WindowCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
@@ -12,12 +10,9 @@ import com.example.ttmrepuestos.data.local.AppDatabase
 import com.example.ttmrepuestos.data.repository.ProductoRepository
 import com.example.ttmrepuestos.data.repository.UsuarioRepository
 import com.example.ttmrepuestos.remote.RetrofitInstance
-import com.example.ttmrepuestos.repository.PostRepository
+import com.example.ttmrepuestos.remote.UsuarioRetrofitInstance
 import com.example.ttmrepuestos.ui.AppNavigation
-import com.example.ttmrepuestos.ui.screens.PostScreen
 import com.example.ttmrepuestos.ui.theme.TTMRepuestosTheme
-import com.example.ttmrepuestos.viewmodel.PostViewModel
-import com.example.ttmrepuestos.viewmodel.PostViewModelFactory
 import com.example.ttmrepuestos.viewmodel.ProductoViewModelFactory
 import com.example.ttmrepuestos.viewmodel.UsuarioViewModelFactory
 
@@ -47,7 +42,8 @@ class MainActivity : ComponentActivity() {
         val productoRepo = ProductoRepository(db.productoDao(), RetrofitInstance.api)
         val productoFactory = ProductoViewModelFactory(productoRepo)
 
-        val usuarioRepo = UsuarioRepository(db.usuarioDao())
+        // Arreglo: Se añade la instancia de la API de usuarios al constructor del repositorio
+        val usuarioRepo = UsuarioRepository(db.usuarioDao(), UsuarioRetrofitInstance.api)
         val usuarioFactory = UsuarioViewModelFactory(usuarioRepo)
 
         setContent {

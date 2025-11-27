@@ -1,7 +1,7 @@
 package com.example.ttmrepuestos.data.local
 
 import androidx.room.*
-import com.example.ttmrepuestos.model.Usuario // Se cambia la importación
+import com.example.ttmrepuestos.model.Usuario
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -20,4 +20,7 @@ interface UsuarioDao {
 
     @Delete
     suspend fun deleteUser(usuario: Usuario)
+
+    @Query("DELETE FROM users")
+    suspend fun deleteAllUsers()
 }

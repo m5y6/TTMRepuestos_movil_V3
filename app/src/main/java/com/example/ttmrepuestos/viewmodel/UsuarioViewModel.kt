@@ -3,7 +3,7 @@ package com.example.ttmrepuestos.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.ttmrepuestos.model.Usuario // Se cambia la importación
+import com.example.ttmrepuestos.model.Usuario
 import com.example.ttmrepuestos.data.repository.UsuarioRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,6 +16,13 @@ class UsuarioViewModel(private val repository: UsuarioRepository) : ViewModel() 
 
     private val _registerResult = MutableStateFlow<Result<Unit>?>(null)
     val registerResult: StateFlow<Result<Unit>?> = _registerResult
+
+    init {
+        // Sincroniza los usuarios desde la API al iniciar el ViewModel
+        viewModelScope.launch {
+            repository.refreshUsers()
+        }
+    }
 
     fun login(correo: String, contrasena: String) {
         viewModelScope.launch {
