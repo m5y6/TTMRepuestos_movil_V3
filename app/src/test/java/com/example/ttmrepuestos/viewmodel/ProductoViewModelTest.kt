@@ -1,5 +1,6 @@
 package com.example.ttmrepuestos.viewmodel
 
+import android.app.Application
 import com.example.ttmrepuestos.data.repository.ProductoRepository
 import com.example.ttmrepuestos.model.Producto
 import io.kotest.core.spec.style.StringSpec
@@ -21,18 +22,20 @@ import kotlinx.coroutines.test.setMain
 class ProductoViewModelTest : StringSpec({
 
     lateinit var mockRepository: ProductoRepository
+    lateinit var mockApplication: Application
     lateinit var viewModel: ProductoViewModel
     val testDispatcher = StandardTestDispatcher()
 
     beforeTest {
         Dispatchers.setMain(testDispatcher)
-        mockRepository = mockk(relaxed = true) // relaxed para no mockear todas las llamadas
+        mockRepository = mockk(relaxed = true)
+        mockApplication = mockk(relaxed = true) // Mock para Application
 
-        // Mockeamos las llamadas que se hacen en el constructor/init
         every { mockRepository.products } returns flowOf(emptyList())
         coEvery { mockRepository.refreshProducts() } returns Unit
 
-        viewModel = ProductoViewModel(mockRepository)
+        // Pasamos el mock de Application al constructor
+        viewModel = ProductoViewModel(mockApplication, mockRepository)
     }
 
     afterTest {
@@ -41,31 +44,26 @@ class ProductoViewModelTest : StringSpec({
 
     "al iniciar, el ViewModel debe llamar a refreshProducts" {
         runTest(testDispatcher) {
-            // Act: Avanzamos el dispatcher para que se ejecute la corrutina del `init`
             advanceUntilIdle()
-            // Assert: Verificamos que se llamó a la función de refresco
             coVerify(exactly = 1) { mockRepository.refreshProducts() }
         }
     }
 
-    "addProduct debe llamar a repository.insert con el producto correcto" {
+    "addProduct debe llamar a repository.addProduct con el producto y la foto" {
         runTest(testDispatcher) {
-            // Arrange
             val producto = Producto(nombre = "Nuevo Prod", precio = 123, descripcion = "Desc", categoria = "Cat")
-            coEvery { mockRepository.insert(any()) } returns 1L // Asumimos que devuelve un ID
-
+            
             // Act
-            viewModel.addProduct("Nuevo Prod", 123, "Desc", "Cat", null)
+            viewModel.addProduct(producto, null) // Pasamos el objeto y la foto
             advanceUntilIdle()
 
-            // Assert: Verificamos que se llamó a insert con un producto con los datos correctos
-            coVerify { mockRepository.insert(producto) }
+            // Assert
+            coVerify { mockRepository.addProduct(producto) }
         }
     }
 
-    "deleteProduct debe llamar a repository.delete" {
+    "deleteProduct debe llamar a repository.deleteProduct" {
         runTest(testDispatcher) {
-            // Arrange
             val productoParaBorrar = Producto(id = 1, nombre = "Para Borrar", precio = 100, descripcion = "...", categoria = "...")
 
             // Act
@@ -73,39 +71,31 @@ class ProductoViewModelTest : StringSpec({
             advanceUntilIdle()
 
             // Assert
-            coVerify { mockRepository.delete(productoParaBorrar) }
+            coVerify { mockRepository.deleteProduct(productoParaBorrar) }
         }
     }
 
-    "updateProduct debe llamar a repository.update con el producto actualizado" {
+    "updateProduct debe llamar a repository.updateProduct con el producto actualizado" {
         runTest(testDispatcher) {
-            // Arrange
-            val productoOriginal = Producto(id = 1, nombre = "Original", precio = 100, descripcion = "Original", categoria = "Original")
-            val productoActualizado = productoOriginal.copy(nombre = "Nuevo Nombre", precio = 150, descripcion = "Nueva Desc", categoria = "Nueva Cat")
+            val productoActualizado = Producto(id = 1, nombre = "Nuevo Nombre", precio = 150, descripcion = "Nueva Desc", categoria = "Nueva Cat")
 
             // Act
-            viewModel.updateProduct(productoOriginal, "Nuevo Nombre", 150, "Nueva Desc", "Nueva Cat")
+            viewModel.updateProduct(productoActualizado)
             advanceUntilIdle()
 
             // Assert
-            coVerify { mockRepository.update(productoActualizado) }
+            coVerify { mockRepository.updateProduct(productoActualizado) }
         }
     }
 
     "el StateFlow de products debe emitir los datos del repositorio" {
         runTest(testDispatcher) {
-            // Arrange
             val fakeProducts = listOf(Producto(id = 1, nombre = "Prod 1", precio = 100, descripcion = "...", categoria = "..."))
-            // Configuramos el mock para que emita la lista falsa
             every { mockRepository.products } returns flowOf(fakeProducts)
 
-            // Act: Creamos una nueva instancia del ViewModel para que recoja el nuevo Flow
-            val newViewModel = ProductoViewModel(mockRepository)
-            
-            // CORRECCIÓN: Damos tiempo a la corrutina de stateIn para ejecutarse
+            val newViewModel = ProductoViewModel(mockApplication, mockRepository)
             advanceUntilIdle()
 
-            // Assert: Verificamos que el valor del StateFlow coincide con los datos falsos
             newViewModel.products.value shouldBe fakeProducts
         }
     }

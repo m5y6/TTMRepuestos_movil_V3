@@ -1,7 +1,8 @@
 package com.example.ttmrepuestos.viewmodel
 
+import android.app.Application
 import android.graphics.Bitmap
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ttmrepuestos.model.Producto
 import com.example.ttmrepuestos.data.repository.ProductoRepository
@@ -11,7 +12,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class ProductoViewModel(private val repository: ProductoRepository) : ViewModel() {
+class ProductoViewModel(
+    application: Application,
+    private val repository: ProductoRepository
+) : AndroidViewModel(application) {
 
     init {
         viewModelScope.launch {
@@ -21,12 +25,10 @@ class ProductoViewModel(private val repository: ProductoRepository) : ViewModel(
 
     val products = repository.products.stateIn(
         viewModelScope,
-        // CORRECCIÓN: Eagerly inicia la recolección inmediatamente, haciendo el testing más fácil.
         SharingStarted.Eagerly,
         emptyList()
     )
 
-    // Almacén de fotos temporal en memoria
     private val _fotosDeProductos = MutableStateFlow<Map<Int, Bitmap>>(emptyMap())
     val fotosDeProductos = _fotosDeProductos.asStateFlow()
 
@@ -36,27 +38,31 @@ class ProductoViewModel(private val repository: ProductoRepository) : ViewModel(
         _fotosDeProductos.value = nuevasFotos
     }
 
-    fun addProduct(nombre: String, precio: Int, descripcion: String, categoria: String, foto: Bitmap?) {
+    fun addProduct(productoSinFoto: Producto, foto: Bitmap?) {
         viewModelScope.launch {
-            val nuevoProducto = Producto(nombre = nombre, precio = precio, descripcion = descripcion, categoria = categoria)
-            val nuevoId = repository.insert(nuevoProducto) // Asumimos que insert devuelve el ID
-            
             if (foto != null) {
-                asignarFotoAProducto(nuevoId.toInt(), foto)
+                val imageUrl = repository.uploadImage(getApplication(), foto)
+                if (imageUrl != null) {
+                    val productoConFoto = productoSinFoto.copy(fotoUri = imageUrl)
+                    repository.addProduct(productoConFoto)
+                } else {
+                    repository.addProduct(productoSinFoto)
+                }
+            } else {
+                repository.addProduct(productoSinFoto)
             }
+        }
+    }
+
+    fun updateProduct(producto: Producto) {
+        viewModelScope.launch {
+            repository.updateProduct(producto)
         }
     }
 
     fun deleteProduct(producto: Producto) {
         viewModelScope.launch {
-            repository.delete(producto)
-        }
-    }
-
-    fun updateProduct(producto: Producto, newNombre: String, newPrecio: Int, newDescripcion: String, newCategoria: String) {
-        viewModelScope.launch {
-            val updatedProducto = producto.copy(nombre = newNombre, precio = newPrecio, descripcion = newDescripcion, categoria = newCategoria)
-            repository.update(updatedProducto)
+            repository.deleteProduct(producto)
         }
     }
 }

@@ -8,10 +8,10 @@ import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
@@ -26,9 +26,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.ttmrepuestos.R
+import com.example.ttmrepuestos.model.Producto
 import com.example.ttmrepuestos.ui.theme.CustomButton
 import com.example.ttmrepuestos.viewmodel.ProductoViewModel
 import kotlinx.coroutines.launch
@@ -40,7 +42,7 @@ fun RegistrarProductoScreen(viewModel: ProductoViewModel) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContenidoRegistrarProducto(viewModel: ProductoViewModel) {
     var nombre by remember { mutableStateOf("") }
@@ -111,11 +113,15 @@ fun ContenidoRegistrarProducto(viewModel: ProductoViewModel) {
                                 Image(
                                     bitmap = targetBitmap.asImageBitmap(),
                                     contentDescription = "Foto del producto",
-                                    modifier = Modifier.fillMaxWidth().height(200.dp)
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(200.dp)
                                 )
                             } else {
                                 Box(
-                                    modifier = Modifier.fillMaxWidth().height(200.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(200.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text("Añade una imagen", textAlign = TextAlign.Center)
@@ -150,7 +156,7 @@ fun ContenidoRegistrarProducto(viewModel: ProductoViewModel) {
 
                         OutlinedTextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre") }, modifier = Modifier.fillMaxWidth())
                         Spacer(Modifier.height(8.dp))
-                        OutlinedTextField(value = precio, onValueChange = { precio = it }, label = { Text("Precio") }, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = precio, onValueChange = { precio = it }, label = { Text("Precio") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
                         Spacer(Modifier.height(8.dp))
                         OutlinedTextField(value = descripcion, onValueChange = { descripcion = it }, label = { Text("Descripción") }, modifier = Modifier.fillMaxWidth())
                         Spacer(Modifier.height(8.dp))
@@ -166,7 +172,9 @@ fun ContenidoRegistrarProducto(viewModel: ProductoViewModel) {
                                 readOnly = true,
                                 label = { Text("Categoría") },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                                modifier = Modifier.menuAnchor().fillMaxWidth()
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
                             )
                             ExposedDropdownMenu(
                                 expanded = expanded,
@@ -188,10 +196,16 @@ fun ContenidoRegistrarProducto(viewModel: ProductoViewModel) {
 
                 Spacer(Modifier.height(16.dp))
 
-                val canSave = nombre.isNotBlank() && precio.isNotBlank() && descripcion.isNotBlank() && fotoCapturada != null
+                val canSave = nombre.isNotBlank() && precio.isNotBlank() && descripcion.isNotBlank()
                 Button(
                     onClick = {
-                        viewModel.addProduct(nombre, precio.toIntOrNull() ?: 0, descripcion, categoriaSeleccionada, fotoCapturada)
+                        val productoSinFoto = Producto(
+                            nombre = nombre,
+                            precio = precio.toIntOrNull() ?: 0,
+                            descripcion = descripcion,
+                            categoria = categoriaSeleccionada
+                        )
+                        viewModel.addProduct(productoSinFoto, fotoCapturada)
                         
                         nombre = ""
                         precio = ""

@@ -1,90 +1,58 @@
 package com.example.ttmrepuestos.repository
 
-import android.util.Log
-import com.example.ttmrepuestos.data.local.UsuarioDao
-import com.example.ttmrepuestos.data.repository.UsuarioRepository
 import com.example.ttmrepuestos.model.Usuario
-import com.example.ttmrepuestos.remote.UsuarioApiService
+import com.example.ttmrepuestos.remote.ApiService
+import com.example.ttmrepuestos.remote.LoginResponse
+import com.example.ttmrepuestos.remote.RegistroResponse
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
-import io.mockk.unmockkStatic
 import kotlinx.coroutines.test.runTest
+import retrofit2.Response
 
 class UsuarioRepositoryTest : StringSpec({
 
-    lateinit var mockApiService: UsuarioApiService
-    lateinit var mockDao: UsuarioDao
+    lateinit var mockApiService: ApiService
     lateinit var repository: UsuarioRepository
 
     beforeTest {
         mockApiService = mockk()
-        mockDao = mockk()
-        repository = UsuarioRepository(mockDao, mockApiService)
-
-        // CORRECCIÓN: Mockeamos la clase estática Log de Android
-        mockkStatic(Log::class)
-        every { Log.e(any(), any<String>(), any()) } returns 0
+        repository = UsuarioRepository(mockApiService)
     }
 
-    afterTest {
-        // Limpiamos el mock estático
-        unmockkStatic(Log::class)
-    }
-
-    "iniciarSesion con credenciales correctas debe devolver el usuario" {
+    "login debe llamar a apiService.login y devolver la respuesta" {
         runTest {
-            val email = "test@test.com"
-            val password = "password"
-            val usuario = Usuario(1, "Test", "User", 25, email, "123456", password)
-            coEvery { mockDao.getUserByEmail(email) } returns usuario
-            val result = repository.iniciarSesion(email, password)
-            result shouldBe usuario
+            val correo = "test@test.com"
+            val contrasena = "password"
+            val loginInfo = mapOf("correo" to correo, "contrasena" to contrasena)
+            val fakeUser = Usuario(1, "Test", "User", 25, correo, "123", contrasena)
+            val fakeResponse = Response.success(LoginResponse("OK", fakeUser))
+
+            // Arrange: Cuando se llame a login en la api, devolvemos la respuesta falsa
+            coEvery { mockApiService.login(loginInfo) } returns fakeResponse
+
+            // Act: Llamamos a la función del repositorio
+            val result = repository.login(correo, contrasena)
+
+            // Assert: Comprobamos que el resultado sea el esperado
+            result shouldBe fakeResponse
         }
     }
 
-    "registrarUsuario debe llamar a insertUser del DAO" {
+    "registrar debe llamar a apiService.registrarUsuario y devolver la respuesta" {
         runTest {
-            val nuevoUsuario = Usuario(0, "Nuevo", "User", 30, "nuevo@test.com", "654321", "newpass")
-            coEvery { mockDao.insertUser(nuevoUsuario) } returns 1L
-            repository.registrarUsuario(nuevoUsuario)
-            coVerify(exactly = 1) { mockDao.insertUser(nuevoUsuario) }
-            coVerify(exactly = 0) { mockApiService.getUsers() }
-        }
-    }
+            val newUser = Usuario(nombre = "Nuevo", apellido = "User", edad = 30, correo = "nuevo@test.com", telefono = "456", contrasena = "newpass")
+            val fakeResponse = Response.success(RegistroResponse("OK", 1))
 
-    "refreshUsers debe obtener usuarios de la API y guardarlos en el DAO" {
-        runTest {
-            val usersFromApi = listOf(Usuario(1, "Api", "User1", 40, "api1@test.com", "111", "apipass1"))
-            coEvery { mockApiService.getUsers() } returns usersFromApi
-            coEvery { mockDao.deleteAllUsers() } returns Unit
-            coEvery { mockDao.insertUser(any()) } returns 1L
-            repository.refreshUsers()
-            coVerify(exactly = 1) { mockApiService.getUsers() }
-            coVerify(exactly = 1) { mockDao.deleteAllUsers() }
-            usersFromApi.forEach {
-                coVerify(exactly = 1) { mockDao.insertUser(it) }
-            }
-        }
-    }
-
-    "si la API falla en refreshUsers, debe llamar a Log.e y no interactuar con el DAO" {
-        runTest {
             // Arrange
-            val apiException = RuntimeException("Error de red")
-            coEvery { mockApiService.getUsers() } throws apiException
+            coEvery { mockApiService.registrarUsuario(newUser) } returns fakeResponse
 
             // Act
-            repository.refreshUsers()
+            val result = repository.registrar(newUser)
 
             // Assert
-            coVerify(exactly = 1) { Log.e("UsuarioRepository", "Error refreshing users", apiException) }
-            coVerify(exactly = 0) { mockDao.deleteAllUsers() }
-            coVerify(exactly = 0) { mockDao.insertUser(any()) }
+            result shouldBe fakeResponse
         }
     }
 })

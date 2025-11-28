@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitInstance {
 
     // Apuntamos a la IP pública y puerto de tu servidor EC2
-    private const val BASE_URL = "http://3.85.218.241:3000/"
+    private const val BASE_URL = "http://100.30.39.133:3000/"
 
     val api: ApiService by lazy {
         Retrofit.Builder()

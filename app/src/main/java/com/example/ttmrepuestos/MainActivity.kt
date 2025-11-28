@@ -4,14 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.room.Room
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.ttmrepuestos.data.local.AppDatabase
 import com.example.ttmrepuestos.data.repository.ProductoRepository
-import com.example.ttmrepuestos.data.repository.UsuarioRepository
-// CORRECCIÓN: Se importa la instancia de Retrofit del paquete 'network' con un alias
-import com.example.ttmrepuestos.network.RetrofitInstance as NetworkRetrofitInstance
-import com.example.ttmrepuestos.remote.UsuarioRetrofitInstance
+import com.example.ttmrepuestos.repository.UsuarioRepository
+import com.example.ttmrepuestos.remote.RetrofitInstance
 import com.example.ttmrepuestos.ui.AppNavigation
 import com.example.ttmrepuestos.ui.theme.TTMRepuestosTheme
 import com.example.ttmrepuestos.viewmodel.ProductoViewModelFactory
@@ -21,31 +17,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
-        val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE products ADD COLUMN fotoUri TEXT")
-            }
-        }
-
-        val MIGRATION_2_3 = object : Migration(2, 3) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, nombre TEXT NOT NULL, apellido TEXT NOT NULL, edad INTEGER NOT NULL, correo TEXT NOT NULL, telefono TEXT NOT NULL, contrasena TEXT NOT NULL)")
-            }
-        }
-
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java,
             "my_database"
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
+        ).fallbackToDestructiveMigration().build()
 
-        // CORRECCIÓN: Se usa la instancia de Retrofit correcta del paquete 'network'
-        val productoRepo = ProductoRepository(db.productoDao(), NetworkRetrofitInstance.api)
-        val productoFactory = ProductoViewModelFactory(productoRepo)
+        val apiService = RetrofitInstance.api
 
-        // Arreglo: Se añade la instancia de la API de usuarios al constructor del repositorio
-        val usuarioRepo = UsuarioRepository(db.usuarioDao(), UsuarioRetrofitInstance.api)
+        val productoRepo = ProductoRepository(db.productoDao(), apiService)
+        val productoFactory = ProductoViewModelFactory(application, productoRepo)
+
+        val usuarioRepo = UsuarioRepository(apiService)
         val usuarioFactory = UsuarioViewModelFactory(usuarioRepo)
 
         setContent {

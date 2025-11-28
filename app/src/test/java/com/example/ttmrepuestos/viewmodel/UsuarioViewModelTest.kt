@@ -1,11 +1,13 @@
 package com.example.ttmrepuestos.viewmodel
 
-import com.example.ttmrepuestos.data.repository.UsuarioRepository
 import com.example.ttmrepuestos.model.Usuario
+import com.example.ttmrepuestos.repository.UsuarioRepository
+import com.example.ttmrepuestos.remote.LoginResponse
+import com.example.ttmrepuestos.remote.RegistroResponse
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -14,6 +16,8 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import okhttp3.ResponseBody.Companion.toResponseBody
+import retrofit2.Response
 
 @ExperimentalCoroutinesApi
 class UsuarioViewModelTest : StringSpec({
@@ -24,7 +28,7 @@ class UsuarioViewModelTest : StringSpec({
 
     beforeTest {
         Dispatchers.setMain(testDispatcher)
-        mockRepository = mockk<UsuarioRepository>(relaxed = true)
+        mockRepository = mockk()
         viewModel = UsuarioViewModel(mockRepository)
     }
 
@@ -32,101 +36,49 @@ class UsuarioViewModelTest : StringSpec({
         Dispatchers.resetMain()
     }
 
-    "login con credenciales correctas debe actualizar loginResult con exito" {
+    "login con credenciales correctas debe actualizar loginResult a Success" {
         runTest(testDispatcher) {
-            // Arrange
             val email = "test@test.com"
             val password = "password"
             val usuario = Usuario(1, "Test", "User", 25, email, "123456", password)
-            coEvery { mockRepository.iniciarSesion(email, password) } returns usuario
+            val successResponse = Response.success(LoginResponse("OK", usuario))
+            coEvery { mockRepository.login(email, password) } returns successResponse
 
-            // Act
             viewModel.login(email, password)
-            advanceUntilIdle() // Corregido
+            advanceUntilIdle()
 
-            // Assert
             val result = viewModel.loginResult.value
-            result?.isSuccess shouldBe true
-            result?.getOrNull() shouldBe usuario
+            result.shouldBeInstanceOf<AuthResult.Success<LoginResponse>>()
+            (result as AuthResult.Success).data.usuario shouldBe usuario
         }
     }
 
-    "login con credenciales incorrectas debe actualizar loginResult con fallo" {
+    "login con credenciales incorrectas debe actualizar loginResult a Error" {
         runTest(testDispatcher) {
-            // Arrange
             val email = "test@test.com"
-            val password = "wrongpassword"
-            coEvery { mockRepository.iniciarSesion(email, password) } returns null
+            val password = "wrong"
+            val errorResponse = Response.error<LoginResponse>(401, "".toResponseBody(null))
+            coEvery { mockRepository.login(email, password) } returns errorResponse
 
-            // Act
             viewModel.login(email, password)
-            advanceUntilIdle() // Corregido
+            advanceUntilIdle()
 
-            // Assert
-            val result = viewModel.loginResult.value
-            result?.isFailure shouldBe true
-            result?.exceptionOrNull()?.message shouldBe "Correo o contraseña incorrectos"
+            viewModel.loginResult.value.shouldBeInstanceOf<AuthResult.Error>()
         }
     }
 
-    "register debe llamar a registrarUsuario del repositorio y actualizar registerResult con exito" {
+    "registrar debe llamar al repositorio y actualizar registroResult a Success" {
         runTest(testDispatcher) {
-            // Arrange
-            val nuevoUsuario = Usuario(0, "Nuevo", "Usuario", 28, "nuevo@test.com", "654321", "newpass")
-            coEvery { mockRepository.registrarUsuario(nuevoUsuario) } returns Unit
+            val newUser = Usuario(nombre = "Nuevo", apellido = "User", edad = 30, correo = "nuevo@test.com", telefono = "456", contrasena = "newpass")
+            val successResponse = Response.success(RegistroResponse("Created", 1))
+            coEvery { mockRepository.registrar(newUser) } returns successResponse
 
-            // Act
-            viewModel.register(nuevoUsuario)
-            advanceUntilIdle() // Corregido
+            viewModel.registrar(newUser)
+            advanceUntilIdle()
 
-            // Assert
-            coVerify { mockRepository.registrarUsuario(nuevoUsuario) }
-            val result = viewModel.registerResult.value
-            result?.isSuccess shouldBe true
-        }
-    }
-
-    "la falla en el registro debe actualizar registerResult con fallo" {
-        runTest(testDispatcher) {
-            // Arrange
-            val nuevoUsuario = Usuario(0, "Nuevo", "Usuario", 28, "nuevo@test.com", "654321", "newpass")
-            val exception = Exception("Error en la base de datos")
-            coEvery { mockRepository.registrarUsuario(nuevoUsuario) } throws exception
-
-            // Act
-            viewModel.register(nuevoUsuario)
-            advanceUntilIdle() // Corregido
-
-            // Assert
-            val result = viewModel.registerResult.value
-            result?.isFailure shouldBe true
-            result?.exceptionOrNull() shouldBe exception
-        }
-    }
-
-    "al iniciar el viewModel debe llamar a refreshUsers" {
-        runTest(testDispatcher) {
-            advanceUntilIdle() // Corregido
-            coVerify { mockRepository.refreshUsers() }
-        }
-    }
-
-    "login con excepcion en el repositorio debe actualizar loginResult con fallo" {
-        runTest(testDispatcher) {
-            // Arrange
-            val email = "test@test.com"
-            val password = "password"
-            val exception = RuntimeException("Error de red")
-            coEvery { mockRepository.iniciarSesion(email, password) } throws exception
-
-            // Act
-            viewModel.login(email, password)
-            advanceUntilIdle() // Corregido
-
-            // Assert
-            val result = viewModel.loginResult.value
-            result?.isFailure shouldBe true
-            result?.exceptionOrNull() shouldBe exception
+            val result = viewModel.registroResult.value
+            result.shouldBeInstanceOf<AuthResult.Success<RegistroResponse>>()
+            (result as AuthResult.Success).data.userId shouldBe 1
         }
     }
 })

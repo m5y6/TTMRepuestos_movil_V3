@@ -4,7 +4,7 @@ import android.util.Log
 import com.example.ttmrepuestos.data.local.ProductoDao
 import com.example.ttmrepuestos.data.repository.ProductoRepository
 import com.example.ttmrepuestos.model.Producto
-import com.example.ttmrepuestos.network.ApiService
+import com.example.ttmrepuestos.remote.ApiService // <-- CORRECCIÓN 1: Importar desde 'remote'
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
@@ -25,26 +25,25 @@ class ProductoRepositoryTest : StringSpec({
 
     beforeTest {
         mockApi = mockk()
-        mockDao = mockk()
-        every { mockDao.getAllProducts() } returns flowOf(emptyList())
+        mockDao = mockk(relaxed = true) // Relaxed para no tener que mockear todas las llamadas
         repository = ProductoRepository(mockDao, mockApi)
 
-        // CORRECCIÓN: Mockeamos la clase estática Log de Android
         mockkStatic(Log::class)
-        // Le decimos que cuando se llame a Log.e con cualquier argumento, no haga nada y devuelva 0
         every { Log.e(any(), any<String>(), any()) } returns 0
     }
 
     afterTest {
-        // Limpiamos el mock estático después de cada test para no afectar a otros
         unmockkStatic(Log::class)
     }
 
     "el flow de products debe emitir los datos del DAO" {
         runTest {
-            val productsFromDao = listOf(Producto(id = 1, nombre = "Producto 1", precio = 100, descripcion = "Desc 1", categoria = "Cat 1", fotoUri = ""))
+            val productsFromDao = listOf(Producto(id = 1, nombre = "Producto 1", precio = 100, descripcion = "Desc 1", categoria = "Cat 1"))
             every { mockDao.getAllProducts() } returns flowOf(productsFromDao)
+            
+            // Recreamos el repo para que tome el nuevo flow
             val newRepository = ProductoRepository(mockDao, mockApi)
+            
             val result = newRepository.products.first()
             result shouldBe productsFromDao
         }
@@ -52,12 +51,15 @@ class ProductoRepositoryTest : StringSpec({
 
     "refreshProducts debe obtener datos de la API y guardarlos en el DAO" {
         runTest {
-            val productsFromApi = listOf(Producto(id = 1, nombre = "Producto API", precio = 150, descripcion = "Desc API", categoria = "Cat API", fotoUri = ""))
-            coEvery { mockApi.getProductos() } returns productsFromApi
+            val productsFromApi = listOf(Producto(id = 1, nombre = "Producto API", precio = 150, descripcion = "Desc API", categoria = "Cat API"))
+            // CORRECCIÓN 2: Usar 'getProducts'
+            coEvery { mockApi.getProducts() } returns productsFromApi
             coEvery { mockDao.deleteAllProducts() } returns Unit
             coEvery { mockDao.insertProduct(any()) } returns 1L
+
             repository.refreshProducts()
-            coVerify(exactly = 1) { mockApi.getProductos() }
+
+            coVerify(exactly = 1) { mockApi.getProducts() }
             coVerify(exactly = 1) { mockDao.deleteAllProducts() }
             productsFromApi.forEach {
                 coVerify { mockDao.insertProduct(it) }
@@ -67,17 +69,13 @@ class ProductoRepositoryTest : StringSpec({
 
     "si la API falla, refreshProducts debe llamar a Log.e y no interactuar con el DAO" {
         runTest {
-            // Arrange
             val apiException = RuntimeException("Error de red")
-            coEvery { mockApi.getProductos() } throws apiException
+            // CORRECCIÓN 3: Usar 'getProducts'
+            coEvery { mockApi.getProducts() } throws apiException
 
-            // Act
             repository.refreshProducts()
 
-            // Assert
-            // Verificamos que se llamó a Log.e para registrar el error
             coVerify(exactly = 1) { Log.e("ProductoRepository", "Error refreshing products", apiException) }
-            // Y verificamos que NO se interactuó con la base de datos
             coVerify(exactly = 0) { mockDao.deleteAllProducts() }
             coVerify(exactly = 0) { mockDao.insertProduct(any()) }
         }

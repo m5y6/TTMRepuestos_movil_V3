@@ -5,12 +5,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.ttmrepuestos.viewmodel.AuthResult
 import com.example.ttmrepuestos.viewmodel.UsuarioViewModel
 
 @Composable
@@ -23,16 +26,24 @@ fun LoginScreen(
     var contrasena by remember { mutableStateOf("") }
     val context = LocalContext.current
 
+    // Observamos el StateFlow del ViewModel
     val loginResult by viewModel.loginResult.collectAsState()
 
+    // Usamos LaunchedEffect para reaccionar a los cambios de loginResult
     LaunchedEffect(loginResult) {
-        loginResult?.let { result ->
-            if (result.isSuccess) {
+        when (val result = loginResult) {
+            is AuthResult.Success -> {
                 Toast.makeText(context, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show()
                 onLoginSuccess()
-            } else {
-                val errorMessage = result.exceptionOrNull()?.message ?: "Error desconocido"
-                Toast.makeText(context, "Error: $errorMessage", Toast.LENGTH_LONG).show()
+            }
+            is AuthResult.Error -> {
+                Toast.makeText(context, "Error: ${result.message}", Toast.LENGTH_LONG).show()
+            }
+            is AuthResult.Loading -> {
+                // Opcional: Mostrar un indicador de carga
+            }
+            is AuthResult.Idle -> {
+                // Estado inicial, no hacer nada
             }
         }
     }
@@ -64,12 +75,19 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(24.dp))
-            Button(
-                onClick = { viewModel.login(correo, contrasena) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Entrar")
+
+            // Mostramos un CircularProgressIndicator si está cargando
+            if (loginResult is AuthResult.Loading) {
+                CircularProgressIndicator()
+            } else {
+                Button(
+                    onClick = { viewModel.login(correo, contrasena) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Entrar")
+                }
             }
+
             Spacer(modifier = Modifier.height(16.dp))
             TextButton(onClick = onRegisterClicked) {
                 Text("¿No tienes cuenta? Regístrate")
