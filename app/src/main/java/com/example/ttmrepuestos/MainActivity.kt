@@ -9,7 +9,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.ttmrepuestos.data.local.AppDatabase
 import com.example.ttmrepuestos.data.repository.ProductoRepository
 import com.example.ttmrepuestos.data.repository.UsuarioRepository
-import com.example.ttmrepuestos.remote.RetrofitInstance
+// CORRECCIÓN: Se importa la instancia de Retrofit del paquete 'network' con un alias
+import com.example.ttmrepuestos.network.RetrofitInstance as NetworkRetrofitInstance
 import com.example.ttmrepuestos.remote.UsuarioRetrofitInstance
 import com.example.ttmrepuestos.ui.AppNavigation
 import com.example.ttmrepuestos.ui.theme.TTMRepuestosTheme
@@ -39,7 +40,8 @@ class MainActivity : ComponentActivity() {
             "my_database"
         ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
 
-        val productoRepo = ProductoRepository(db.productoDao(), RetrofitInstance.api)
+        // CORRECCIÓN: Se usa la instancia de Retrofit correcta del paquete 'network'
+        val productoRepo = ProductoRepository(db.productoDao(), NetworkRetrofitInstance.api)
         val productoFactory = ProductoViewModelFactory(productoRepo)
 
         // Arreglo: Se añade la instancia de la API de usuarios al constructor del repositorio

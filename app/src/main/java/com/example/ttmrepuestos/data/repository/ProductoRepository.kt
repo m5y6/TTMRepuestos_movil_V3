@@ -3,7 +3,7 @@ package com.example.ttmrepuestos.data.repository
 import android.util.Log
 import com.example.ttmrepuestos.data.local.ProductoDao
 import com.example.ttmrepuestos.model.Producto
-import com.example.ttmrepuestos.remote.ApiService
+import com.example.ttmrepuestos.network.ApiService // Import corregido
 import kotlinx.coroutines.flow.Flow
 
 class ProductoRepository(
@@ -14,7 +14,8 @@ class ProductoRepository(
 
     suspend fun refreshProducts() {
         try {
-            val remoteProducts = apiService.getProducts()
+            // Llamada corregida
+            val remoteProducts = apiService.getProductos()
             dao.deleteAllProducts()
             remoteProducts.forEach {
                 dao.insertProduct(it)

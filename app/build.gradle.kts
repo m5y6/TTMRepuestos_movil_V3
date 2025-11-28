@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.ttmrepuestos"
-        minSdk = 28  // ← CAMBIA ESTO de 24 a 28
+        minSdk = 28
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -39,7 +39,6 @@ android {
         compose = true
     }
 
-    // ← AGREGA ESTO
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -84,7 +83,7 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.4.0")
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
     // ===== PRUEBAS UNITARIAS (test/) =====
     testImplementation(libs.junit)
@@ -92,17 +91,19 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-core:5.8.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
     testImplementation("io.mockk:mockk:1.13.10")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")  // ← AGREGA ESTO
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
 
     // ===== PRUEBAS DE INSTRUMENTACIÓN (androidTest/) =====
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation("androidx.test:runner:1.6.1")
     androidTestImplementation("androidx.test:rules:1.6.1")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")  // ← AGREGA ESTO
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.2")
-    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")  // ← AGREGA ESTO
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    androidTestImplementation("io.mockk:mockk-android:1.13.10")
 
     // ===== DEBUG =====
     debugImplementation(libs.androidx.compose.ui.tooling)
@@ -114,7 +115,7 @@ configurations.all {
         force("androidx.test.espresso:espresso-core:3.6.1")
         force("androidx.test:runner:1.6.1")
         force("androidx.test:rules:1.6.1")
-        force("androidx.test.ext:junit:1.2.1")  // ← AGREGA ESTO
+        force("androidx.test.ext:junit:1.2.1")
     }
 }
 

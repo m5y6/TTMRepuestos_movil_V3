@@ -21,7 +21,8 @@ class ProductoViewModel(private val repository: ProductoRepository) : ViewModel(
 
     val products = repository.products.stateIn(
         viewModelScope,
-        SharingStarted.Companion.WhileSubscribed(),
+        // CORRECCIÓN: Eagerly inicia la recolección inmediatamente, haciendo el testing más fácil.
+        SharingStarted.Eagerly,
         emptyList()
     )
 

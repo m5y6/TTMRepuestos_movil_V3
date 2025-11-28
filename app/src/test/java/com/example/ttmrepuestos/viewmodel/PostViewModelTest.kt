@@ -1,43 +1,67 @@
 package com.example.ttmrepuestos.viewmodel
 
 import com.example.ttmrepuestos.model.Post
-import com.example.ttmrepuestos.remote.ApiService
 import com.example.ttmrepuestos.repository.PostRepository
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 
-class TestTablePostRepository(private val testApi: ApiService): PostRepository() {
-    override suspend fun getPosts(): List<Post> {
-        return testApi.getPosts()
-    }
-}
-
-@OptIn(ExperimentalCoroutinesApi::class)
+@ExperimentalCoroutinesApi
 class PostViewModelTest : StringSpec({
-    "postList se actualiza correctamente tras fetchPosts()" {
-        val fakePosts = listOf(
-            Post(1, 1, "Titulo 1", "Contenido 1"),
-            Post(2, 2, "Titulo 2", "Contenido 2")
-        )
 
-        // MOCKEAMOS EL REPOSITORIO DIRECTAMENTE (Más limpio)
-        val mockRepo = mockk<PostRepository>()
-        coEvery { mockRepo.getPosts() } returns fakePosts
+    lateinit var mockRepository: PostRepository
+    lateinit var viewModel: PostViewModel
+    val testDispatcher = StandardTestDispatcher()
 
-        val dispatcher = StandardTestDispatcher()
-        // Pasamos el mockRepo en lugar de la clase auxiliar
-        val viewModel = PostViewModel(mockRepo, dispatcher)
+    beforeTest {
+        Dispatchers.setMain(testDispatcher)
+        mockRepository = mockk()
+        every { mockRepository.posts } returns flowOf(emptyList())
+        coEvery { mockRepository.refreshPosts() } returns Unit
+        viewModel = PostViewModel(mockRepository, testDispatcher)
+    }
 
-        runTest(dispatcher) {
-            viewModel.fetchPosts()
+    afterTest {
+        Dispatchers.resetMain()
+    }
+
+    "el estado inicial de posts debe ser una lista vacía" {
+        viewModel.posts.value.shouldBeEmpty()
+    }
+
+    "el ViewModel debe llamar a refreshPosts en el init" {
+        runTest(testDispatcher) {
             advanceUntilIdle()
-            viewModel.postList.value shouldContainExactly fakePosts
+            coVerify(exactly = 1) { mockRepository.refreshPosts() }
+        }
+    }
+
+    "el StateFlow de posts debe emitir los datos del repositorio" {
+        runTest(testDispatcher) {
+            // Arrange
+            val fakePosts = listOf(Post(1, 1, "Titulo 1", "Cuerpo 1"))
+            every { mockRepository.posts } returns flowOf(fakePosts)
+
+            // Act
+            val newViewModel = PostViewModel(mockRepository, testDispatcher)
+
+            // CORRECCIÓN: Damos tiempo a la corrutina de stateIn para ejecutarse
+            advanceUntilIdle()
+
+            // Assert
+            newViewModel.posts.value shouldBe fakePosts
         }
     }
 })
