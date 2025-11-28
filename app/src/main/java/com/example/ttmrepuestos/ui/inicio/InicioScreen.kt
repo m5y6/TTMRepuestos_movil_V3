@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.ttmrepuestos.R
 
@@ -37,18 +38,20 @@ fun InicioScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text("Historia de TTM Repuestos", style = MaterialTheme.typography.headlineMedium)
+            Text("La Leyenda de TTM Repuestos", style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                "Aquí va la historia de la empresa. TTM Repuestos ha estado sirviendo a la comunidad con las mejores partes y servicios desde [Año de Fundación]. Nuestro compromiso es con la calidad y la satisfacción del cliente.",
-                style = MaterialTheme.typography.bodyLarge
+                "Un dia julia gutierrez decidio crear la empresa TTM repuestos el cual ofrece al cliente la venta de repuestos de camiones, otrogandoles un servicio de calidad y un precio justo para el cliente.",
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(32.dp))
-            Text("Nuestra Ubicación", style = MaterialTheme.typography.headlineMedium)
+            Text("Nuestra Ubicación Mítica", style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                "Encuéntranos en [Dirección de la Empresa]. ¡Te esperamos!",
-                style = MaterialTheme.typography.bodyLarge
+                "La tienda TTM repuestos se encuentra en Vicuña Mackena, frente al construmark , en el local 1120",
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center
             )
         }
     }

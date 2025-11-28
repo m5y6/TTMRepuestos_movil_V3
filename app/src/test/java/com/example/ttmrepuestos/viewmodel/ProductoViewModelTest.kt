@@ -1,7 +1,7 @@
 package com.example.ttmrepuestos.viewmodel
 
 import android.app.Application
-import com.example.ttmrepuestos.data.repository.ProductoRepository
+import com.example.ttmrepuestos.repository.ProductoRepository
 import com.example.ttmrepuestos.model.Producto
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe

@@ -3,7 +3,7 @@ package com.example.ttmrepuestos.viewmodel
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.ttmrepuestos.data.repository.ProductoRepository
+import com.example.ttmrepuestos.repository.ProductoRepository
 
 class ProductoViewModelFactory(
     private val application: Application,

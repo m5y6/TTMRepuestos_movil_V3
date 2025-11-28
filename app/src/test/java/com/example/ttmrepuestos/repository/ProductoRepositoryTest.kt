@@ -2,7 +2,7 @@ package com.example.ttmrepuestos.repository
 
 import android.util.Log
 import com.example.ttmrepuestos.data.local.ProductoDao
-import com.example.ttmrepuestos.data.repository.ProductoRepository
+import com.example.ttmrepuestos.repository.ProductoRepository
 import com.example.ttmrepuestos.model.Producto
 import com.example.ttmrepuestos.remote.ApiService // <-- CORRECCIÓN 1: Importar desde 'remote'
 import io.kotest.core.spec.style.StringSpec

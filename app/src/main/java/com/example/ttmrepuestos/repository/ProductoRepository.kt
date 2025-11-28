@@ -1,4 +1,4 @@
-package com.example.ttmrepuestos.data.repository
+package com.example.ttmrepuestos.repository
 
 import android.content.Context
 import android.graphics.Bitmap

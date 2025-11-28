@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.room.Room
 import com.example.ttmrepuestos.data.local.AppDatabase
-import com.example.ttmrepuestos.data.repository.ProductoRepository
+import com.example.ttmrepuestos.repository.ProductoRepository
 import com.example.ttmrepuestos.repository.UsuarioRepository
 import com.example.ttmrepuestos.remote.RetrofitInstance
 import com.example.ttmrepuestos.ui.AppNavigation
