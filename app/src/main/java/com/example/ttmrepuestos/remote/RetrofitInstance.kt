@@ -15,4 +15,14 @@ object RetrofitInstance {
             .build()
             .create(ApiService::class.java)
     }
+
+    private const val CURRENCY_BASE_URL = "https://v6.exchangerate-api.com/"
+    val currencyApi: CurrencyApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(CURRENCY_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(CurrencyApiService::class.java)
+    }
+
 }
