@@ -2,15 +2,13 @@ package com.example.ttmrepuestos.ui.resumen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Card
-import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -24,19 +22,17 @@ fun ResumenScreen(viewModel: ProductoViewModel) {
     val products by viewModel.products.collectAsState(initial = emptyList())
     val productsByCategory = products.groupBy { it.categoria }
 
-    // --- ¡NUEVO! Box para superponer el logo y el contenido ---
+
     Box(modifier = Modifier.fillMaxSize()) {
-        // Logo de fondo
         Image(
             painter = painterResource(id = R.drawable.logo3),
             contentDescription = "Logo de fondo",
             modifier = Modifier
                 .fillMaxSize()
-                .graphicsLayer(alpha = 0.15f), // Se aplica transparencia
+                .graphicsLayer(alpha = 0.15f),
             contentScale = ContentScale.Crop
         )
 
-        // Contenido del resumen
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -46,7 +42,9 @@ fun ResumenScreen(viewModel: ProductoViewModel) {
             Text("Resumen de Inventario", style = MaterialTheme.typography.headlineLarge)
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Mostramos el total de productos
             Text("Total de productos: ${products.size}", style = MaterialTheme.typography.titleLarge)
+
             Spacer(modifier = Modifier.height(16.dp))
             Divider()
             Spacer(modifier = Modifier.height(16.dp))

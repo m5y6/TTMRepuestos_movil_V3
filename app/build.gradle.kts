@@ -52,6 +52,9 @@ android {
     // Habilitar el uso de recursos de Android en los tests unitarios
     testOptions {
         unitTests.isIncludeAndroidResources = true
+        unitTests.all {
+            it.useJUnitPlatform()
+        }
     }
 }
 

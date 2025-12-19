@@ -47,7 +47,7 @@ fun VerProductosScreen(viewModel: ProductoViewModel) {
     var newDescripcion by remember { mutableStateOf("") }
     var newCategoria by remember { mutableStateOf("") }
 
-    var showDetailsDialog by remember { mutableStateOf(false) } // Error corregido aqui
+    var showDetailsDialog by remember { mutableStateOf(false) }
     var productoToShow by remember { mutableStateOf<Producto?>(null) }
 
     // Estado para controlar la moneda a mostrar (CLP o USD)
@@ -148,11 +148,67 @@ fun VerProductosScreen(viewModel: ProductoViewModel) {
     }
 
     if (showEditDialog && productoToEdit != null) {
-        // ... (Tu dialogo de edicion se mantiene igual)
+        AlertDialog(
+            onDismissRequest = { showEditDialog = false },
+            title = { Text("Editar Producto") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = newNombre,
+                        onValueChange = { newNombre = it },
+                        label = { Text("Nombre") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = newPrecio,
+                        onValueChange = { newPrecio = it },
+                        label = { Text("Precio") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = newCategoria,
+                        onValueChange = { newCategoria = it },
+                        label = { Text("Categoría") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = newDescripcion,
+                        onValueChange = { newDescripcion = it },
+                        label = { Text("Descripción") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val updatedProduct = productoToEdit!!.copy(
+                            nombre = newNombre,
+                            precio = newPrecio.toIntOrNull() ?: productoToEdit!!.precio,
+                            descripcion = newDescripcion,
+                            categoria = newCategoria
+                        )
+                        viewModel.updateProduct(updatedProduct)
+                        showEditDialog = false
+                    },
+                    colors = CustomButton.colors
+                ) {
+                    Text("Guardar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 
     if (showDetailsDialog && productoToShow != null) {
-        // Modificamos el dialogo de detalles para incluir la conversion
         ProductDetailsDialog(
             producto = productoToShow!!,
             conversionRate = conversionRate,
@@ -164,7 +220,7 @@ fun VerProductosScreen(viewModel: ProductoViewModel) {
 @Composable
 fun ProductDetailsDialog(
     producto: Producto,
-    conversionRate: Double?, // Recibe la tasa de conversion
+    conversionRate: Double?,
     onDismiss: () -> Unit
 ) {
     AlertDialog(
